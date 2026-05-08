@@ -16,8 +16,11 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+
 from rest_framework.routers import DefaultRouter
 from . import views
+import os
+
 
 
 router = DefaultRouter()
@@ -27,8 +30,25 @@ router.register(r'activities', views.ActivityViewSet, basename='activity')
 router.register(r'leaderboard', views.LeaderboardViewSet, basename='leaderboard')
 router.register(r'workouts', views.WorkoutViewSet, basename='workout')
 
+CODESPACE_NAME = os.environ.get('CODESPACE_NAME')
+codespace_url = f"https://{CODESPACE_NAME}-8000.app.github.dev" if CODESPACE_NAME else "http://localhost:8000"
+
+
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+
+@api_view(['GET'])
+def api_root(request, format=None):
+    return Response({
+        'users': f'{codespace_url}/api/users/',
+        'teams': f'{codespace_url}/api/teams/',
+        'activities': f'{codespace_url}/api/activities/',
+        'leaderboard': f'{codespace_url}/api/leaderboard/',
+        'workouts': f'{codespace_url}/api/workouts/',
+    })
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('', views.api_root, name='api-root'),
+    path('', api_root, name='api-root'),
 ]
